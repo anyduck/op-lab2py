@@ -53,10 +53,29 @@ def multiple_csv2list(files: list[Path]) -> list[InputLine]:
     return result
 
 
+def calc_scholarship_average_rating(table: list[InputLine]) -> list[OutputLine]:
+    """ Обчислює середній бал студентів б'юджетників. """
+
+    def average(rating):
+        return round(sum(rating) / len(rating), 3)
+
+    return [OutputLine(student.surname, average(student.rating))
+            for student in table if not student.is_contractor]
+
+
+def calc_stipend(table: list[OutputLine]) -> list[OutputLine]:
+    table = sorted(table, key=lambda x: x.rating_avg, reverse=True)
+    limit = int(len(table) * 0.4)
+    return table[:limit]
+
+
 def main(folder: Path, output: Path) -> None:
     files = find_csv(folder)
     table = multiple_csv2list(files)
-    print(table)
+    scholarship_table = calc_scholarship_average_rating(table)
+    stipend_table = calc_stipend(scholarship_table)
+    print(f'Мінімальний рейтинг для стипендії становить: {stipend_table[-1].rating_avg}')
+    print(stipend_table)
 
 
 if __name__ == '__main__':

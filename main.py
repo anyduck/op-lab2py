@@ -2,6 +2,8 @@
 from pathlib import Path
 from collections import namedtuple
 
+from csv import multiple_csv2table, table2csv
+
 
 InputLine = namedtuple('InputLine', ['surname', 'rating', 'is_contractor'])
 OutputLine = namedtuple('OutputLine', ['surname', 'rating_avg'])
@@ -26,6 +28,12 @@ def list2input_line(line: list) -> InputLine:
     return InputLine(surname, rating, is_contractor)
 
 
+def output_line2list(line: OutputLine) -> list[str]:
+    """ Конвертує кінцевий OuptupLine в список. """
+
+    return [str(x) for x in line]
+
+
 def find_csv(folder: Path) -> list[Path]:
     """ Повертає список всіх *.csv файлів в теці. """
 
@@ -33,24 +41,11 @@ def find_csv(folder: Path) -> list[Path]:
             if path.is_file() and path.suffix == '.csv']
 
 
-def csv2list(path: Path) -> list[InputLine]:
-    """ Конвертує вміст csv в список InputLine-ів. """
+def load_table(folder: Path) -> list[InputLine]:
+    files = find_csv(folder)
+    table = multiple_csv2table(files)
 
-    result = []
-    with open(path, 'r') as csv:
-        for line in csv.readlines()[1:]:  # Пропускаємо перший рядок
-            result.append(list2input_line(line.rstrip('\n').split(',')))
-    return result
-
-
-def multiple_csv2list(files: list[Path]) -> list[InputLine]:
-    """ Об'єднує декілька csv в список InputLine-ів. """
-
-    result = []
-
-    for file in files:
-        result += csv2list(file)
-    return result
+    return [list2input_line(row) for row in table]
 
 
 def calc_scholarship_average_rating(table: list[InputLine]) -> list[OutputLine]:
@@ -64,25 +59,25 @@ def calc_scholarship_average_rating(table: list[InputLine]) -> list[OutputLine]:
 
 
 def calc_stipend(table: list[OutputLine]) -> list[OutputLine]:
+    """ Обчислює список студентів, що отримають спипендію. """
+
     table = sorted(table, key=lambda x: x.rating_avg, reverse=True)
     limit = int(len(table) * 0.4)
+
     return table[:limit]
 
 
-def list2csv(table: list[OutputLine], path: Path) -> None:
-    with open(path, 'w') as csv:
-        for line in table:
-            line = (f'{x}' for x in line)
-            csv.write(','.join(line) + '\n')
+def save_table(table: list[OutputLine], path: Path) -> None:
+    converted = [output_line2list(row) for row in table]
+    table2csv(converted, path)
 
 
 def main(folder: Path, output: Path) -> None:
-    files = find_csv(folder)
-    table = multiple_csv2list(files)
+    table = load_table(folder)
     scholarship_table = calc_scholarship_average_rating(table)
     stipend_table = calc_stipend(scholarship_table)
     print(f'Мінімальний рейтинг для стипендії становить: {stipend_table[-1].rating_avg}')
-    list2csv(stipend_table, output)
+    save_table(stipend_table, output)
 
 
 if __name__ == '__main__':

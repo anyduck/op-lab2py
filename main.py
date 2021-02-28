@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from collections import namedtuple
 
@@ -85,6 +86,17 @@ def main(folder: Path, output: Path) -> None:
     list2csv(stipend_table, output)
 
 
+def parse_args() -> Namespace:
+    parser = ArgumentParser(description='Process rating csv files')
+    parser.add_argument('folder', type=Path,
+                        help='folder with csv files')
+    parser.add_argument('-o', '--output', type=Path,
+                        default=Path('rating.csv'),
+                        help='path to the final csv file')
+
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    folder = Path(input('Введіть теку з фалами: '))
-    main(folder, output=Path('rating.csv'))
+    args = parse_args()
+    main(args.folder, args.output)

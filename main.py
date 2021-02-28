@@ -3,8 +3,27 @@ from pathlib import Path
 from collections import namedtuple
 
 
-InputLine = namedtuple('InputLine', ['surname', 'r1', 'r2', 'r3', 'r4', 'r5', 'is_contractor'])
-OutputLine = namedtuple('OutputLine', ['surname', 'rating'])
+InputLine = namedtuple('InputLine', ['surname', 'rating', 'is_contractor'])
+OutputLine = namedtuple('OutputLine', ['surname', 'rating_avg'])
+
+
+def list2input_line(line: list) -> InputLine:
+    """ Конвертує список вхідних даних в InputLine. """
+
+    def flag2bool(flag: str) -> bool:
+        """ Перетворює текстовий флаг в булеву змінну. """
+
+        if flag.lower() in ('true', 'yes'):
+            return True
+        if flag.lower() in ('false', 'no'):
+            return False
+        raise ValueError(f'Невідомий флаг {flag}')
+
+    surname: str = line[0]
+    rating: tuple = tuple(int(r) for r in line[1:5])
+    is_contractor: bool = flag2bool(line[6])
+
+    return InputLine(surname, rating, is_contractor)
 
 
 def find_csv(folder: Path) -> list[Path]:
@@ -13,11 +32,14 @@ def find_csv(folder: Path) -> list[Path]:
     return [path for path in folder.iterdir()
             if path.is_file() and path.suffix == '.csv']
 
+
 def csv2list(path: Path) -> list[InputLine]:
+    """ Конвертує вміст csv в список InputLine-ів. """
+
     result = []
     with open(path, 'r') as csv:
-        for line in csv.readlines()[1:]: # Пропускаємо перший рядок
-            result.append(InputLine(*line.split(',')))
+        for line in csv.readlines()[1:]:  # Пропускаємо перший рядок
+            result.append(list2input_line(line.rstrip('\n').split(',')))
     return result
 
 

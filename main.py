@@ -43,9 +43,20 @@ def csv2list(path: Path) -> list[InputLine]:
     return result
 
 
+def multiple_csv2list(files: list[Path]) -> list[InputLine]:
+    """ Об'єднує декілька csv в список InputLine-ів. """
+
+    result = []
+
+    for file in files:
+        result += csv2list(file)
+    return result
+
+
 def main(folder: Path, output: Path) -> None:
     files = find_csv(folder)
-    print(csv2list(files[0]))
+    table = multiple_csv2list(files)
+    print(table)
 
 
 if __name__ == '__main__':

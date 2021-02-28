@@ -69,13 +69,20 @@ def calc_stipend(table: list[OutputLine]) -> list[OutputLine]:
     return table[:limit]
 
 
+def list2csv(table: list[OutputLine], path: Path) -> None:
+    with open(path, 'w') as csv:
+        for line in table:
+            line = (f'{x}' for x in line)
+            csv.write(','.join(line) + '\n')
+
+
 def main(folder: Path, output: Path) -> None:
     files = find_csv(folder)
     table = multiple_csv2list(files)
     scholarship_table = calc_scholarship_average_rating(table)
     stipend_table = calc_stipend(scholarship_table)
     print(f'Мінімальний рейтинг для стипендії становить: {stipend_table[-1].rating_avg}')
-    print(stipend_table)
+    list2csv(stipend_table, output)
 
 
 if __name__ == '__main__':

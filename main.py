@@ -23,7 +23,7 @@ def list2input_line(line: list) -> InputLine:
         raise ValueError(f'Невідомий флаг {flag}')
 
     surname: str = line[0]
-    rating: tuple = tuple(int(r) for r in line[1:5])
+    rating: tuple = tuple(int(r) for r in line[1:6])
     is_contractor: bool = flag2bool(line[6])
 
     return InputLine(surname, rating, is_contractor)
